@@ -1,2 +1,2 @@
 # Ingenious_Monitoring
-A dashboard to monitoring UCL Ingenious stats
+A dashboard to monitor UCL Ingenious stats
