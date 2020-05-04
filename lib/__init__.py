@@ -84,6 +84,58 @@ def results(sqlite_file, dates):
     print("<results> scanning done !")
     #return
     return dates_dict
+def chart_task(sqlite_file, interval, mode, course):
+    """
+    pre sqlite_file(str) : sqlite file
+    pre interval(tuple) : a interval as (yyyy-mm-dd, yyyy-mm-dd, yyyy-mm-dd, yyyy-mm-dd)
+    pre mode(str) : - "value"
+                    - "percentage"
+    pre course(str) : course as 'LSINF1101_PYTHON', 'LEPL1402' or 'LSINF1252'
+    return (list) : chart_setup of data
+    """
+    #reach to file
+    conn = sqlite3.connect("useful_data.sqlite")
+    cursor = conn.cursor()
+    results_list = []
+    for x in list(cursor.execute("select * from pragma_table_info('"+course+"')"))[1:] :
+        results_list.append([0,x[1]])
+    for row in cursor.execute("SELECT * from "+course):
+        date = row[0]
+        date_object = datetime.date(int(date[:4]),int(date[5:7]),int(date[8:10]))
+        latest_date_object = datetime.date(int(interval[1][:4]),int(interval[1][5:7]),int(interval[1][8:10]))
+        if is_in_interval(date, interval):
+            i = 0
+            for column in row[1:]:
+                results_list[i][0] += column
+                i += 1
+        elif date_object > latest_date_object:
+            break
+    #find the 3 max
+    results_dict = {}
+    for x in range(3):
+        i_max = results_list.index(max(results_list))
+        results_dict[results_list[i_max][1]] = results_list[i_max][0]
+        del results_list[i_max]
+    #other execrices
+    results_dict["Others"] = 0
+    for result in results_list:
+        results_dict["Others"] += 1
+
+    labels_list = []
+    for key in results_dict.keys():
+        labels_list.append(key)
+    values_list = []
+    for value in results_dict.values():
+        values_list.append(value)
+    #turn values in purcentage
+    if mode == "percentage":
+        percs = percentage(values_list)
+        values_list[0] = percs[0]
+        values_list[1] = percs[1]
+        values_list[2] = percs[2]
+        values_list[3] = percs[3]
+    print("<chart_task>",labels_list, values_list)
+    return chart_setup(type = 'pie', labels = labels_list, datas = values_list, extra_options = "{legend: {display: false}}")
 
 def create_submissions_table(file_name, results_dict):
     """
@@ -360,6 +412,105 @@ def chart_global(sqlite_file, start_date, end_date, interval):
         data_list.append(intervals_dict[key])
     print("<chart_global>",labels_list,data_list)
     return chart_setup(type = 'bar', labels = labels_list, datas = data_list, extra_options = '{legend: { display: false}}')
+
+
+
+def chart_global_courses(sqlite_file, start_date, end_date, interval, course):
+    """
+    pre sqlite_file(str) : sqlite file
+    pre start_date(str) : start date as yyyy-mm-dd
+    pre end_date(str) : end date as yyyy-mm-dd
+    pre interval(int) : interval between two dates as "day", "week," "month" or
+                        "year"
+    pre course(str) : course as 'LSINF1101_PYTHON', 'LEPL1402' or 'LSINF1252'
+    return (list) : chart_setup of data
+    """
+    intervals_dict = {}
+    data_list = []
+    labels_list = []
+    #course
+    if course == 'LSINF1101_PYTHON':
+        c = 5
+    elif course == 'LEPL1402':
+        c = 6
+    elif course == 'LSINF1252':
+        c = 7
+    else:
+        raise Exception("No course {}".format(course))
+    #select dates
+    dates = select_dates(sqlite_file, start_date, end_date)
+    #check if date is in sqlite file
+    if dates == None:
+        return None
+    #calc calc_intervals
+    intervals = calc_intervals(dates,interval)
+    #reach to file
+    conn = sqlite3.connect(sqlite_file)
+    cursor = conn.cursor()
+    for row in cursor.execute("SELECT * from submissions"):
+        date = row[0]
+        for interval in intervals:
+            if is_in_interval(date, interval):
+                if intervals_dict.get(interval,-1) == -1:
+                    intervals_dict[interval] = row[c]
+                else:
+                    intervals_dict[interval] += row[c]
+    for key in intervals_dict:
+        #turn date in yyyy-mm-dd form into dd/mm/yy form
+        label = key[0][8:10]+"/"+key[0][5:7]+"/"+key[0][:4]+" - "+key[1][8:10]+"/"+key[1][5:7]+"/"+key[1][:4]
+        labels_list.append(label)
+        data_list.append(intervals_dict[key])
+    print("<chart_global>",labels_list,data_list)
+    return chart_setup(type = 'bar', labels = labels_list, datas = data_list, extra_options = '{legend: { display: false}}')
+
+
+def chart_details_courses(sqlite_file, interval, mode, course):
+    """
+    pre sqlite_file(str) : sqlite file
+    pre interval(tuple) : a interval as (yyyy-mm-dd, yyyy-mm-dd, yyyy-mm-dd, yyyy-mm-dd)
+    pre mode(str) : - "value"
+                    - "percentage"
+    pre course(str) : course as 'LSINF1101_PYTHON', 'LEPL1402' or 'LSINF1252'
+    return (list) : chart_setup of data
+    """
+    #course
+    if course == 'LSINF1101_PYTHON':
+        c = 1
+    elif course == 'LEPL1402':
+        c = 4
+    elif course == 'LSINF1252':
+        c = 7
+    else:
+        raise Exception("No course {}".format(course))
+    results_dict = {'total': 0, 'success': 0, 'failures': 0, 'errors': 0}
+    #reach to file
+    conn = sqlite3.connect(sqlite_file)
+    cursor = conn.cursor()
+    for row in cursor.execute("SELECT * from courses"):
+        date = row[0]
+        date_object = datetime.date(int(date[:4]),int(date[5:7]),int(date[8:10]))
+        latest_date_object = datetime.date(int(interval[1][:4]),int(interval[1][5:7]),int(interval[1][8:10]))
+        if is_in_interval(date, interval):
+            total = 0
+            results_dict['success'] += row[c]
+            total += row[c]
+            results_dict['failures'] += row[c+1]
+            total += row[c+1]
+            results_dict['errors'] += row[c+2]
+            total += row[c+2]
+            results_dict['total'] += total
+        elif date_object > latest_date_object:
+            break
+    #turn sucess, failures and errors into percentage form
+    if mode == "percentage":
+        values = list(results_dict.values())[1:]
+        percs = percentage(values)
+        results_dict["success"] = percs[0]
+        results_dict["failures"] = percs[1]
+        results_dict["errors"] = percs[2]
+    print("<chart_details>",[results_dict['total'],results_dict['success'],results_dict['failures'],results_dict['errors']])
+    return round(float(results_dict['total']),2), round(float(results_dict['success']),2),round(float(results_dict['failures']),2),round(float(results_dict['errors']),2)
+
 
 def chart_details(sqlite_file, interval, mode):
     """

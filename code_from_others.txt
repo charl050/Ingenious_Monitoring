@@ -1,0 +1,5 @@
+	- SB Admin 2 template for boxes : https://github.com/BlackrockDigital/startbootstrap-sb-admin-2
+	- Bootstrap : https://getbootstrap.com/docs/4.4/getting-started/introduction/
+	- ChartJs : https://www.chartjs.org/docs/latest/
+	
+	
