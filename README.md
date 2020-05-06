@@ -1,2 +1,2 @@
 # Ingenious_Monitoring
-A dashboard to monitor UCL Ingenious stats
+A dashboard using Flask to monitor UCL Ingenious stats
