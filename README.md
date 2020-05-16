@@ -10,7 +10,7 @@ python create_database.py
 ```
 
 
-To run the server, the two databases must in the root directory of the server, like this:
+To run the server, the two databases must be at the root directory of the server, like this:
  -  /inginious.sqlite
  -  /useful_data.sqlite
  
