@@ -12,7 +12,7 @@
 
 	<!-- Bootstrap CSS CDN -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-	<!--  CSS -->
+	<!-- CSS -->
 	<link rel="stylesheet" href="static/css/style.css">
 	<!-- Bootstrap JS -->
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
@@ -25,13 +25,14 @@
 </head>
 
 <body>
+
 	<!-- Navigation bar -->
 	<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
 		<a class="navbar-brand" href="#">Statistics</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
-		<div class="collapse navbar-collapse">
+		<div class="collapse navbar-collapse" id="navbarText">
 			<ul class="navbar-nav mr-auto">
 				<li class="nav-item">
 					<a class="nav-link" id = "global" href="/">Global Stats</a>
@@ -43,6 +44,7 @@
 		</div>
 	</nav>
 
+
 	<!-- Settings panel -->
 	<div class="container-fluid">
 		<div class="row">
@@ -52,7 +54,43 @@
 				<form class="form form-horizontal" action="" method="post" role="form">
 					<div class="row">
 
+						<div class="col-sm-1">
+							<label for="example-date-input" class="col-form-label">
+								<p class="text-xs font-weight-bold text-dark">Course</p>
+							</label>
+						</div>
 
+						<div class="col-sm-2">
+							<div class="form-group">
+								<select class="custom-select" id='course' name="course" required>
+									<option value="LSINF1101_PYTHON">LSINF1101_PYTHON</option>
+									<option value="LEPL1402">LEPL1402</option>
+									<option value="LSINF1252">LSINF1252</option>
+								</select>
+								<script type="text/javascript">
+									document.getElementById('course').value = '{{course_keep}}';
+								</script>
+							</div>
+						</div>
+
+						<div class="col-sm-1">
+							<label for="example-date-input" class="col-form-label">
+								<p class="text-xs font-weight-bold text-dark">Tasks</p>
+							</label>
+						</div>
+
+						<div class="col-sm-2">
+							<div class="form-group">
+								<select class="custom-select" id='task' name="task" required>
+									{%for i in range(0, len)%}
+    							<option value="{{task_item[i]}}">{{task_item[i]}}</option>
+									{%endfor%}
+								</select>
+								<script type="text/javascript">
+									document.getElementById('task').value = '{{task_keep}}';
+								</script>
+							</div>
+						</div>
 
 						<div class="col-sm-1">
 							<label for="example-date-input" class="col-form-label">
@@ -60,11 +98,11 @@
 							</label>
 						</div>
 
-						<div class="col-sm-3">
+						<div class="col-sm-1">
 							<input class="form-control" type="date" value={{start_date_keep}} id="date_from" name="date_from">
 						</div>
 
-						<div class="col-sm-3">
+						<div class="col-sm-1">
 							<input class="form-control" type="date" value={{end_date_keep}} id="date_to" name="date_to">
 						</div>
 
@@ -75,7 +113,7 @@
 							</label>
 						</div>
 
-						<div class="col-sm-3">
+						<div class="col-sm-1">
 							<div class="form-group">
 								<select class="custom-select" id='scale' name="scale" required>
 									<option value="day">Day</option>
@@ -98,12 +136,14 @@
 				</form>
 			</div>
 		</div>
+
 		{% if error %}
 		<div class="alert alert-danger" role="alert">
 		  <h4 class="alert-heading">Oups, there is an error ...</h4>
 		  <p>Try to select another tasks or courses</p>
 		</div>
     {% endif %}
+
 		<!-- Boxes (inspired from SB admin) -->
 		<div class="row top-buffer">
 			<div class="col-sm-2">
@@ -209,8 +249,18 @@
 					</div>
 				</div>
 			</div>
-
-
+			{% if task_keep == "All" %}
+			<div class="col-sm-2">
+				<div class="row align-items-start">
+					<div class="col-sm-12 mb-4">
+						<div class="card">
+							<div class="card-body">
+								<p class="text-center font-weight-bold">Submissions by tasks</p>
+								<canvas id="donut1" width="5" height="5"></canvas>
+							</div>
+						</div>
+					</div>
+				</div>
 
 				<div class="row align-items-start">
 					<div class="col-sm-12 mb-4">
@@ -224,17 +274,21 @@
 				</div>
 
 			</div>
+			{% endif %}
 
 		</div>
 	</div>
 
 	<!-- Script to configure the charts-->
 	<script>
+		{% if task_keep == "All" %}
+		var donut_student= new Chart(document.getElementById("donut1"), {{donut_tasks}});
 		var donut_courses = new Chart(document.getElementById("donut2"), {{donut_courses}});
+		{% endif %}
 		var chart_global = new Chart(document.getElementById("chart_global"), {{chart_global}});
 
 		// Highlight effect on nav bar
-		document.getElementById("global").className += " active";
+		document.getElementById("details").className += " active";
 	</script>
 
 
