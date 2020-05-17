@@ -17,7 +17,7 @@ To run the server, the two databases must be at the root directory of the server
  
 To start the server, simply excute the following command in terminal, in the root directory
 ```bash
-python app.py
+python routes.py
 ```
 
 
