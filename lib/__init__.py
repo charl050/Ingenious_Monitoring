@@ -74,7 +74,7 @@ def chart_global_task(sqlite_file, start_date, end_date, interval, task, course)
         labels_list.append(label)
         data_list.append(intervals_dict[key])
     print("<chart_global_task>",labels_list,data_list)
-    return chart_setup(type = 'bar', labels = labels_list, datas = data_list, extra_options = '{legend: { display: false}}')
+    return chart_setup(type = 'line', labels = labels_list, datas = data_list, extra_options = '{legend: { display: false}}')
 
 def chart_details_task(sqlite_file, interval, mode, course, task):
     """
